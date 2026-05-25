@@ -79,12 +79,12 @@ jobs:
         run: |
           echo "CXXFLAGS=-std=gnu++20 -stdlib=libc++" >> $GITHUB_ENV
 
-      # Purge any pre-compiled .node files that may have been restored from the
-      # pnpm store cache (potentially from a different platform/OS). This ensures
-      # electron-rebuild always compiles fresh native binaries for the current OS.
-      - name: Clear cached native module binaries
+      # Purge node-gyp compiled .node files that may have been restored from the
+      # pnpm store cache compiled on a different OS. Only targets build/Release/
+      # directories (node-gyp output) — leaves pre-built package binaries intact.
+      - name: Clear cached compiled native module binaries
         shell: bash
-        run: find node_modules -name "*.node" -delete && echo "Cleared stale .node files"
+        run: find node_modules -path "*/build/Release/*.node" -delete && echo "Cleared stale compiled .node files"
 
       # Run the full postinstall: Electron binary download, patch-package,
       # electron-rebuild, and minify-locales.
