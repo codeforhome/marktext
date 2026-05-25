@@ -23,38 +23,44 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Generates the build matrix dynamically so workflow_dispatch can target
+  # a single platform without running all runners.
+  setup-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set.outputs.matrix }}
+    steps:
+      - id: set
+        run: |
+          ALL='{"include":[
+            {"name":"linux","os":"ubuntu-latest","platform":"linux"},
+            {"name":"windows-x64","os":"windows-latest","platform":"windows","arch":"x64"},
+            {"name":"windows-arm64","os":"windows-11-arm","platform":"windows","arch":"arm64"},
+            {"name":"macos-x64","os":"macos-15-intel","platform":"macos","arch":"x64"},
+            {"name":"macos-arm64","os":"macos-15","platform":"macos","arch":"arm64"}
+          ]}'
+          PLATFORM="${{ inputs.platform }}"
+          if [[ "${{ github.event_name }}" == "pull_request" || "$PLATFORM" == "all" || -z "$PLATFORM" ]]; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+          else
+            case "$PLATFORM" in
+              windows-x64)   M='{"include":[{"name":"windows-x64","os":"windows-latest","platform":"windows","arch":"x64"}]}' ;;
+              windows-arm64) M='{"include":[{"name":"windows-arm64","os":"windows-11-arm","platform":"windows","arch":"arm64"}]}' ;;
+              linux)         M='{"include":[{"name":"linux","os":"ubuntu-latest","platform":"linux"}]}' ;;
+              macos-x64)     M='{"include":[{"name":"macos-x64","os":"macos-15-intel","platform":"macos","arch":"x64"}]}' ;;
+              macos-arm64)   M='{"include":[{"name":"macos-arm64","os":"macos-15","platform":"macos","arch":"arm64"}]}' ;;
+            esac
+            echo "matrix=$M" >> "$GITHUB_OUTPUT"
+          fi
+
   run-on-pr-head:
-    # For manual runs, skip matrix entries that don't match the chosen platform
-    if: >-
-      github.event_name == 'pull_request' ||
-      inputs.platform == 'all' ||
-      inputs.platform == matrix.name
+    needs: setup-matrix
     permissions:
       pull-requests: read
       actions: read
     runs-on: ${{ matrix.os }}
     strategy:
-      matrix:
-        include:
-          - name: linux
-            os: ubuntu-latest
-            platform: linux
-          - name: windows-x64
-            os: windows-latest
-            platform: windows
-            arch: x64
-          - name: windows-arm64
-            os: windows-11-arm
-            platform: windows
-            arch: arm64
-          - name: macos-x64
-            os: macos-15-intel
-            platform: macos
-            arch: x64
-          - name: macos-arm64
-            os: macos-15
-            platform: macos
-            arch: arm64
+      matrix: ${{ fromJson(needs.setup-matrix.outputs.matrix) }}
 
     steps:
       - uses: actions/checkout@v4
