@@ -79,6 +79,13 @@ jobs:
         run: |
           echo "CXXFLAGS=-std=gnu++20 -stdlib=libc++" >> $GITHUB_ENV
 
+      # Purge any pre-compiled .node files that may have been restored from the
+      # pnpm store cache (potentially from a different platform/OS). This ensures
+      # electron-rebuild always compiles fresh native binaries for the current OS.
+      - name: Clear cached native module binaries
+        shell: bash
+        run: find node_modules -name "*.node" -delete && echo "Cleared stale .node files"
+
       # Run the full postinstall: Electron binary download, patch-package,
       # electron-rebuild, and minify-locales.
       - name: Run postinstall
@@ -87,6 +94,23 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           npm_config_user_agent: 'pnpm'
           USE_ELECTRON_CLANG: ${{ matrix.platform == 'linux' && '0' || '' }}
+
+      # Verify native modules were compiled for the correct platform.
+      - name: Verify native module platform (Windows)
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $nodes = Get-ChildItem -Recurse -Filter "ced.node" -Path "node_modules" -ErrorAction SilentlyContinue
+          foreach ($f in $nodes) {
+            $bytes = [System.IO.File]::ReadAllBytes($f.FullName)
+            $magic = '{0:X2}{1:X2}' -f $bytes[0], $bytes[1]
+            Write-Host "ced.node at $($f.FullName) — magic: $magic"
+            if ($magic -ne '4D5A') {
+              Write-Error "ced.node is NOT a Windows PE binary (expected MZ/4D5A, got $magic). Build will produce a broken app."
+              exit 1
+            }
+          }
+          Write-Host "All ced.node files are valid Windows PE binaries."
 
       - name: build-linux
         if: matrix.platform == 'linux'
