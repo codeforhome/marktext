@@ -87,8 +87,9 @@ win:
   executableName: marktext
   artifactName: 'marktext-win-${arch}-${version}.${ext}'
   target:
-    - target: 'nsis'
     - target: 'zip'
+    # nsis disabled: requires wine32 which has broken deps on Ubuntu 24.04
+    # - target: 'nsis'
   icon: static/icon.ico
 nsis:
   artifactName: 'marktext-win-${arch}-${version}-setup.${ext}'

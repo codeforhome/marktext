@@ -3,6 +3,20 @@ name: PR Build
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: false
+        default: 'windows-x64'
+        type: choice
+        options:
+          - windows-x64
+          - windows-arm64
+          - linux
+          - macos-x64
+          - macos-arm64
+          - all
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -10,6 +24,11 @@ concurrency:
 
 jobs:
   run-on-pr-head:
+    # For manual runs, skip matrix entries that don't match the chosen platform
+    if: >-
+      github.event_name == 'pull_request' ||
+      inputs.platform == 'all' ||
+      inputs.platform == matrix.name
     permissions:
       pull-requests: read
       actions: read
