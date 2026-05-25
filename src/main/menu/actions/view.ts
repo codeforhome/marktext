@@ -77,6 +77,12 @@ export const reloadImageCache = (win: Win): void => {
   }
 }
 
+export const exitComparison = (win: Win): void => {
+  if (win && win.webContents) {
+    win.webContents.send('mt::exit-comparison')
+  }
+}
+
 // --- Commands -------------------------------------------------------------
 
 export const loadViewCommands = (commandManager: CommandManager): void => {
@@ -135,6 +141,9 @@ export const viewLayoutChanged = (
         break
       case 'focus':
         changeMenuByName(focusModeMenuItemId, value)
+        break
+      case 'comparisonMode':
+        disableMenuByName('exitComparisonMenuItem', !!value)
         break
     }
   }

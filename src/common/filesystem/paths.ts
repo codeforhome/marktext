@@ -2,6 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { isFile, isFile2, isSymbolicLink } from './index'
 import { minimatch } from 'minimatch'
+import { normalizeWslPath } from './wsl'
 
 const isOsx = process.platform === 'darwin'
 
@@ -69,6 +70,10 @@ export const isMarkdownFile = (filepath: string): boolean => {
 
 /**
  * Check if the both paths point to the same file.
+ *
+ * WSL UNC paths (\\wsl$\... and \\wsl.localhost\...) are normalized to a
+ * canonical \\wsl$\ form before comparison so that the two prefix variants
+ * are correctly identified as the same path.
  */
 export const isSamePathSync = (
   pathA: string,
@@ -76,8 +81,9 @@ export const isSamePathSync = (
   isNormalized: boolean = false
 ): boolean => {
   if (!pathA || !pathB) return false
-  const a = isNormalized ? pathA : path.normalize(pathA)
-  const b = isNormalized ? pathB : path.normalize(pathB)
+  // Normalize WSL UNC prefix variants before standard path normalization
+  const a = normalizeWslPath(isNormalized ? pathA : path.normalize(pathA))
+  const b = normalizeWslPath(isNormalized ? pathB : path.normalize(pathB))
   if (a.length !== b.length) {
     return false
   } else if (a === b) {

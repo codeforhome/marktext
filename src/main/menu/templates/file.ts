@@ -43,6 +43,12 @@ export default function(
       click(_menuItem, browserWindow) {
         actions.openFolder((browserWindow as BrowserWindow | undefined) ?? null)
       }
+    },
+    {
+      label: t('menu.file.openByPath'),
+      click(_menuItem, browserWindow) {
+        actions.openByPath(browserWindow as BrowserWindow | undefined)
+      }
     }
   ]
 
@@ -140,6 +146,15 @@ export default function(
       accelerator: keybindings.getAccelerator('file.rename-file') ?? undefined,
       click(_menuItem, browserWindow) {
         actions.rename(browserWindow as BrowserWindow | undefined)
+      }
+    },
+    {
+      type: 'separator'
+    },
+    {
+      label: t('menu.file.compareFiles'),
+      click(_menuItem, browserWindow) {
+        actions.compareFiles((browserWindow as BrowserWindow | undefined) ?? null)
       }
     },
     {

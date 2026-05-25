@@ -739,6 +739,31 @@ export const openFileOrFolder = (win: BrowserWindow, pathname: string): void => 
   }
 }
 
+export const openByPath = (win: Win): void => {
+  if (win && win.webContents) {
+    win.webContents.send('mt::show-open-by-path-dialog')
+  }
+}
+
+ipcMain.on('mt::open-by-path', (e, filePath: string) => {
+  const win = BrowserWindow.fromWebContents(e.sender)
+  if (!win || !filePath) {
+    return
+  }
+  const resolvedPath = normalizeAndResolvePath(filePath)
+  if (isFile(resolvedPath)) {
+    ipcMain.emit('app-open-file-by-id', win.id, resolvedPath)
+  } else if (isDirectory(resolvedPath)) {
+    ipcMain.emit('app-open-directory-by-id', win.id, resolvedPath)
+  } else {
+    win.webContents.send('mt::show-notification', {
+      title: 'Open by path',
+      type: 'error',
+      message: `Path not found: ${filePath}`
+    })
+  }
+})
+
 export const newBlankTab = (win: Win): void => {
   if (win && win.webContents) {
     win.webContents.send('mt::new-untitled-tab')
@@ -799,6 +824,29 @@ export const rename = (win: Win): void => {
 
 export const clearRecentlyUsed = (): void => {
   ipcMain.emit('menu-clear-recently-used')
+}
+
+export const compareFiles = async(win: BrowserWindow | null): Promise<void> => {
+  if (!win) {
+    return
+  }
+  const { filePaths, canceled } = await dialog.showOpenDialog(win, {
+    title: 'Compare Files — select two markdown files',
+    properties: ['openFile', 'multiSelections'],
+    filters: [
+      {
+        name: 'Markdown document',
+        extensions: [...MARKDOWN_EXTENSIONS]
+      }
+    ]
+  })
+
+  if (canceled || !filePaths || filePaths.length < 2) {
+    return
+  }
+
+  const [fileA, fileB] = filePaths
+  win.webContents.send('mt::enter-comparison', fileA!, fileB!)
 }
 
 // --- Commands -------------------------------------------------------------

@@ -13,6 +13,7 @@
       "open": "Open",
       "openFile": "Open File...",
       "openFolder": "Open Folder...",
+      "openByPath": "Open by Path...",
       "openRecent": "Open Recent",
       "clearRecentlyUsed": "Clear Recently Used",
       "save": "Save",
@@ -23,6 +24,7 @@
       "export": "Export",
       "exportHtml": "Export as HTML",
       "exportPdf": "Export as PDF",
+      "compareFiles": "Compare Files...",
       "import": "Import",
       "print": "Print",
       "recent": "Recent Files",
@@ -139,6 +141,7 @@
       "toc": "Table of Contents",
       "toggleTableOfContents": "Toggle Table of Contents",
       "reloadImages": "Reload Images",
+      "exitComparison": "Exit Comparison",
       "showDeveloperTools": "Show Developer Tools",
       "reloadWindow": "Reload Window"
     },

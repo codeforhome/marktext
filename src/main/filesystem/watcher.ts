@@ -4,6 +4,7 @@ import log from 'electron-log'
 import chokidar, { type FSWatcher } from 'chokidar'
 import { exists } from 'common/filesystem'
 import { hasMarkdownExtension, checkPathExcludePattern } from 'common/filesystem/paths'
+import { isWslUncPath } from 'common/filesystem/wsl'
 import { getUniqueId } from '../utils'
 import { loadMarkdownFile } from '../filesystem/markdown'
 import { isLinux, isOsx } from '../config'
@@ -189,7 +190,12 @@ class Watcher {
   }
 
   watch(win: BrowserWindow, watchPath: string, type: WatchType = 'dir'): () => void {
-    const usePolling = isOsx ? true : this._preferences.getItem('watcherUsePolling')
+    // WSL UNC paths (\\wsl$\...) require polling because inotify events do not
+    // cross the WSL boundary into Windows. Use a 1-second poll interval for
+    // WSL paths regardless of the user's polling preference.
+    const isWslPath = isWslUncPath(watchPath)
+    const usePolling = isWslPath || isOsx ? true : this._preferences.getItem('watcherUsePolling')
+    const pollingInterval = isWslPath ? 1000 : undefined
 
     const id = getUniqueId()
 
@@ -225,7 +231,8 @@ class Watcher {
         pollInterval: WATCHER_STABILITY_POLL_INTERVAL
       },
 
-      usePolling
+      usePolling,
+      ...(pollingInterval !== undefined ? { interval: pollingInterval } : {})
       // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chokidar's `ignored` callback signature varies between versions; this options bag works at runtime but defies the bundled type
     } as any)
 

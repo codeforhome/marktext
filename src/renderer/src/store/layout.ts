@@ -183,18 +183,64 @@ export const useLayoutStore = defineStore('layout', () => {
     SET_SIDE_BAR_WIDTH(width)
   }
 
+  // ---------------------------------------------------------------
+  // Comparison mode — side-by-side file view (not persisted/buffered)
+  // ---------------------------------------------------------------
+
+  const comparisonMode = ref(false)
+  const comparisonFileA = ref<string | null>(null)
+  const comparisonFileB = ref<string | null>(null)
+
+  function enterComparison(fileA: string, fileB: string): void {
+    comparisonFileA.value = fileA
+    comparisonFileB.value = fileB
+    comparisonMode.value = true
+    const { windowId } = window.marktext?.env ?? {}
+    window.electron.ipcRenderer.send('mt::view-layout-changed', Number(windowId), {
+      comparisonMode: true
+    })
+  }
+
+  function exitComparison(): void {
+    comparisonMode.value = false
+    comparisonFileA.value = null
+    comparisonFileB.value = null
+    const { windowId } = window.marktext?.env ?? {}
+    window.electron.ipcRenderer.send('mt::view-layout-changed', Number(windowId), {
+      comparisonMode: false
+    })
+  }
+
+  function LISTEN_FOR_COMPARISON(): void {
+    window.electron.ipcRenderer.on('mt::enter-comparison', (_e, fileA: string, fileB: string) => {
+      enterComparison(fileA, fileB)
+    })
+    window.electron.ipcRenderer.on('mt::exit-comparison', () => {
+      exitComparison()
+    })
+    window.electron.ipcRenderer.on('mt::show-open-by-path-dialog', () => {
+      bus.emit('show-open-by-path-dialog')
+    })
+  }
+
   return {
     rightColumn,
     showSideBar,
     showTabBar,
     sideBarWidth,
     effectiveSideBarWidth,
+    comparisonMode,
+    comparisonFileA,
+    comparisonFileB,
+    enterComparison,
+    exitComparison,
     SET_LAYOUT,
     CREATE_BUFFERED_STATE,
     RESTORE_BUFFERED_STATE,
     TOGGLE_LAYOUT_ENTRY,
     SET_SIDE_BAR_WIDTH,
     LISTEN_FOR_LAYOUT,
+    LISTEN_FOR_COMPARISON,
     DISPATCH_LAYOUT_MENU_ITEMS,
     CHANGE_SIDE_BAR_WIDTH
   }

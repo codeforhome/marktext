@@ -33,6 +33,7 @@
       <export-setting-dialog />
       <rename />
       <import-modal />
+      <open-by-path-dialog />
     </div>
   </div>
 </template>
@@ -51,6 +52,7 @@ import CommandPalette from '@/components/commandPalette/index.vue'
 import ExportSettingDialog from '@/components/exportSettings/index.vue'
 import Rename from '@/components/rename/index.vue'
 import ImportModal from '@/components/import/index.vue'
+import OpenByPathDialog from '@/components/openByPathDialog/index.vue'
 import bus from '@/bus'
 import { DEFAULT_STYLE } from '@/config'
 import { useLayoutStore } from '@/store/layout'
@@ -159,6 +161,7 @@ onMounted(async () => {
   mainStore.LISTEN_WIN_STATUS()
   await commandCenterStore.LISTEN_COMMAND_CENTER_BUS()
   layoutStore.LISTEN_FOR_LAYOUT()
+  layoutStore.LISTEN_FOR_COMPARISON()
   listenForMainStore.LISTEN_FOR_EDIT()
   preferencesStore.LISTEN_FOR_VIEW()
   listenForMainStore.LISTEN_FOR_SHOW_DIALOG()

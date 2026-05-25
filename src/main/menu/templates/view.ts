@@ -82,6 +82,17 @@ export default function(keybindings: Keybindings): MenuItemConstructorOptions {
       click(_item, focusedWindow) {
         actions.reloadImageCache(focusedWindow as BrowserWindow | undefined)
       }
+    },
+    {
+      type: 'separator'
+    },
+    {
+      id: 'exitComparisonMenuItem',
+      label: t('menu.view.exitComparison'),
+      enabled: false,
+      click(_item, focusedWindow) {
+        actions.exitComparison(focusedWindow as BrowserWindow | undefined)
+      }
     }
   ]
 

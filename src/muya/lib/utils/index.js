@@ -277,9 +277,13 @@ export const getImageInfo = (src, baseUrl = window.DIRNAME) => {
     } else {
       // Correct relative path on desktop. If we resolve a absolute path "path.resolve" doesn't do anything.
       // NOTE: We don't need to convert Windows styled path to UNIX style because Chromium handels this internal.
+      // NOTE(WSL): pathe normalizes WSL UNC paths (\\wsl$\Ubuntu\...) to //wsl$/Ubuntu/... form.
+      // Stripping the leading // preserves the UNC host as the file URL authority:
+      //   file://wsl$/Ubuntu/home/user/image.png  (correct)
+      // Without the strip it becomes file:////wsl$/... (empty authority, broken).
       return {
         isUnknownType: false,
-        src: 'file://' + path.resolve(baseUrl, src)
+        src: 'file://' + path.resolve(baseUrl, src).replace(/^\/\//, '')
       }
     }
   } else if (isUrl && !imageExtension) {
