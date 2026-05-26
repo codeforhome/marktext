@@ -368,6 +368,14 @@
     "type": "boolean",
     "default": true
   },
+  "pinnedFolders": {
+    "description": "General--Ordered list of pinned folder paths shown in the sidebar.--internal",
+    "type": "array",
+    "items": {
+      "type": "string"
+    },
+    "default": []
+  },
   "searchExclusions": {
     "description": "Searcher--List of glob patterns to exclude from search.--internal",
     "type": "array",

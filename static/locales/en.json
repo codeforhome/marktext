@@ -279,7 +279,10 @@
       "closeAll": "Close All",
       "emptyProject": "Empty project",
       "createFile": "Create File",
-      "openFolder": "Open Folder"
+      "openFolder": "Open Folder",
+      "pinnedFolders": "Pinned Folders",
+      "pinFolder": "Pin Folder",
+      "unpinFolder": "Unpin"
     },
     "toc": {
       "title": "Table Of Contents"

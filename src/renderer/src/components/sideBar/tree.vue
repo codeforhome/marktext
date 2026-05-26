@@ -60,6 +60,46 @@
       </div>
     </div>
 
+    <!-- Pinned Folders -->
+    <div
+      v-if="pinnedFolders.length > 0"
+      class="pinned-folders"
+    >
+      <div
+        class="title"
+        @click.stop="showPinned = !showPinned"
+      >
+        <el-icon
+          class="icon-arrow"
+          :class="{ fold: !showPinned }"
+          :size="12"
+        >
+          <ArrowRight />
+        </el-icon>
+        <span class="default-cursor text-overflow">{{ t('sideBar.tree.pinnedFolders') }}</span>
+      </div>
+      <div
+        v-show="showPinned"
+        class="pinned-list"
+      >
+        <div
+          v-for="pinnedPath in pinnedFolders"
+          :key="pinnedPath"
+          class="pinned-item"
+          :title="pinnedPath"
+          @click="openPinnedFolder(pinnedPath)"
+        >
+          <span class="text-overflow">{{ pinnedFolderName(pinnedPath) }}</span>
+          <a
+            href="javascript:;"
+            class="unpin-btn"
+            :title="t('sideBar.tree.unpinFolder')"
+            @click.stop="unpinFolder(pinnedPath)"
+          >✕</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Project tree view -->
     <div
       v-if="projectTree"
@@ -80,6 +120,13 @@
         >{{
           projectTree.name
         }}</span>
+        <a
+          v-if="!isPinned(projectTree.pathname)"
+          href="javascript:;"
+          class="pin-btn"
+          :title="t('sideBar.tree.pinFolder')"
+          @click.stop="pinCurrentFolder"
+        >📌</a>
       </div>
       <div
         v-show="showDirectories"
@@ -183,7 +230,37 @@ const preferencesStore = usePreferencesStore()
 
 // Computed properties
 const { createCache } = storeToRefs(projectStore)
-const { openedFilesInSidebar } = storeToRefs(preferencesStore)
+const { openedFilesInSidebar, pinnedFolders } = storeToRefs(preferencesStore)
+
+const showPinned = ref(true)
+
+const isPinned = (pathname: string): boolean =>
+  pinnedFolders.value.includes(pathname)
+
+const pinCurrentFolder = (): void => {
+  if (!props.projectTree) return
+  const p = props.projectTree.pathname
+  if (!isPinned(p)) {
+    preferencesStore.SET_SINGLE_PREFERENCE({
+      type: 'pinnedFolders',
+      value: [...pinnedFolders.value, p]
+    })
+  }
+}
+
+const unpinFolder = (pathname: string): void => {
+  preferencesStore.SET_SINGLE_PREFERENCE({
+    type: 'pinnedFolders',
+    value: pinnedFolders.value.filter((p) => p !== pathname)
+  })
+}
+
+const openPinnedFolder = (pathname: string): void => {
+  window.electron.ipcRenderer.send('mt::open-by-path', pathname)
+}
+
+const pinnedFolderName = (pathname: string): string =>
+  window.path.basename(pathname) || pathname
 
 // The createCache state is `{ dirname, type }` while an input is shown, and
 // `{}` otherwise. Expose a typed accessor for the template so we don't have
@@ -462,5 +539,69 @@ onMounted(() => {
 }
 .bold {
   font-weight: 600;
+}
+
+/* ---- Pinned Folders ---- */
+.pinned-folders {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+}
+.pinned-folders > .title {
+  height: 30px;
+  line-height: 30px;
+  font-size: 14px;
+  padding-right: 15px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+.pinned-folders > .title > span {
+  flex: 1;
+}
+.pinned-item {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding-left: 22px;
+  padding-right: 15px;
+  cursor: default;
+  user-select: none;
+}
+.pinned-item:hover {
+  background: var(--sideBarItemHoverBgColor);
+}
+.pinned-item > span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unpin-btn {
+  display: none;
+  color: var(--sideBarIconColor);
+  text-decoration: none;
+  font-size: 12px;
+  margin-left: 6px;
+}
+.pinned-item:hover .unpin-btn {
+  display: block;
+}
+.unpin-btn:hover {
+  color: var(--highlightThemeColor);
+}
+
+/* ---- Pin button in project-tree title ---- */
+.pin-btn {
+  pointer-events: auto;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 12px;
+  margin-left: 8px;
+  color: var(--sideBarIconColor);
+  opacity: 0;
+}
+.project-tree > .title:hover .pin-btn {
+  opacity: 1;
 }
 </style>
