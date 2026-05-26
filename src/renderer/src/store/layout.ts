@@ -190,6 +190,14 @@ export const useLayoutStore = defineStore('layout', () => {
   const comparisonMode = ref(false)
   const comparisonFileA = ref<string | null>(null)
   const comparisonFileB = ref<string | null>(null)
+  const compareCandidate = ref<string | null>(null)
+
+  function setCompareCandidate(pathname: string): void {
+    compareCandidate.value = pathname
+  }
+  function clearCompareCandidate(): void {
+    compareCandidate.value = null
+  }
 
   function enterComparison(fileA: string, fileB: string): void {
     comparisonFileA.value = fileA
@@ -221,6 +229,15 @@ export const useLayoutStore = defineStore('layout', () => {
     window.electron.ipcRenderer.on('mt::show-open-by-path-dialog', () => {
       bus.emit('show-open-by-path-dialog')
     })
+    bus.on('SIDEBAR::select-for-compare', (pathname: unknown) => {
+      setCompareCandidate(pathname as string)
+    })
+    bus.on('SIDEBAR::compare-with', (pathname: unknown) => {
+      if (compareCandidate.value) {
+        enterComparison(compareCandidate.value, pathname as string)
+        clearCompareCandidate()
+      }
+    })
   }
 
   return {
@@ -232,8 +249,11 @@ export const useLayoutStore = defineStore('layout', () => {
     comparisonMode,
     comparisonFileA,
     comparisonFileB,
+    compareCandidate,
     enterComparison,
     exitComparison,
+    setCompareCandidate,
+    clearCompareCandidate,
     SET_LAYOUT,
     CREATE_BUFFERED_STATE,
     RESTORE_BUFFERED_STATE,

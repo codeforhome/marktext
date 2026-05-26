@@ -36,3 +36,11 @@ export const remove = (_menuItem?: MenuItemArg, _browserWindow?: BrowserWindowAr
 export const showInFolder = (_menuItem?: MenuItemArg, _browserWindow?: BrowserWindowArg): void => {
   bus.emit('SIDEBAR::show-in-folder')
 }
+
+export const selectForCompare = (pathname: string): void => {
+  bus.emit('SIDEBAR::select-for-compare', pathname)
+}
+
+export const compareWith = (pathname: string): void => {
+  bus.emit('SIDEBAR::compare-with', pathname)
+}

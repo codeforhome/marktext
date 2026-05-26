@@ -28,6 +28,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useProjectStore } from '@/store/project'
 import { useEditorStore } from '@/store/editor'
+import { useLayoutStore } from '@/store/layout'
 import FileIcon from './icon.vue'
 import { showContextMenu } from '../../contextMenu/sideBar'
 import bus from '../../bus'
@@ -40,6 +41,7 @@ const props = defineProps<{
 
 const projectStore = useProjectStore()
 const editorStore = useEditorStore()
+const layoutStore = useLayoutStore()
 
 const newName = ref('')
 const fileEl = ref<HTMLDivElement | null>(null)
@@ -48,6 +50,7 @@ const renameInput = ref<HTMLInputElement | null>(null)
 const { renameCache } = storeToRefs(projectStore)
 const { activeItem } = storeToRefs(projectStore)
 const { clipboard } = storeToRefs(projectStore)
+const { compareCandidate } = storeToRefs(layoutStore)
 const { currentFile, tabs } = storeToRefs(editorStore)
 
 // from fileMixins
@@ -87,7 +90,7 @@ onMounted(() => {
     fileEl.value.addEventListener('contextmenu', (event) => {
       event.preventDefault()
       projectStore.CHANGE_ACTIVE_ITEM(props.file)
-      showContextMenu(event, !!clipboard.value)
+      showContextMenu(event, !!clipboard.value, props.file, compareCandidate.value)
     })
   }
 

@@ -72,6 +72,18 @@ export const getShowInFolder = () => ({
   }
 })
 
+export const getSelectForCompare = (pathname: string) => ({
+  label: 'Select for Compare',
+  id: 'selectForCompareMenuItem',
+  click: () => contextMenu.selectForCompare(pathname)
+})
+
+export const getCompareWith = (thisPathname: string, candidateName: string) => ({
+  label: `Compare with "${candidateName}"`,
+  id: 'compareWithMenuItem',
+  click: () => contextMenu.compareWith(thisPathname)
+})
+
 // Retained for backward compatibility
 export const NEW_FILE = getNewFile()
 export const NEW_DIRECTORY = getNewDirectory()

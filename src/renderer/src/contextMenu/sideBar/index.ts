@@ -1,3 +1,4 @@
+import path from 'path'
 import {
   SEPARATOR,
   getNewFile,
@@ -7,13 +8,17 @@ import {
   getPASTE,
   getRENAME,
   getDELETE,
-  getShowInFolder
+  getShowInFolder,
+  getSelectForCompare,
+  getCompareWith
 } from './menuItems'
 import { popupContextMenu, type ContextMenuItem } from '../popupMenu'
 
 export const showContextMenu = (
   event: { clientX: number; clientY: number },
-  hasPathCache: boolean
+  hasPathCache: boolean,
+  fileInfo: { isMarkdown: boolean; pathname: string; name: string },
+  compareCandidate: string | null
 ): void => {
   const contextItems: ContextMenuItem[] = [
     getNewFile(),
@@ -31,6 +36,15 @@ export const showContextMenu = (
 
   // PASTE entry (index 5) toggles based on the cached source path.
   contextItems[5].enabled = hasPathCache
+
+  // Compare items — only for markdown files
+  if (fileInfo.isMarkdown) {
+    contextItems.push(SEPARATOR)
+    contextItems.push(getSelectForCompare(fileInfo.pathname))
+    if (compareCandidate && compareCandidate !== fileInfo.pathname) {
+      contextItems.push(getCompareWith(fileInfo.pathname, path.basename(compareCandidate)))
+    }
+  }
 
   const items: ContextMenuItem[] = contextItems.map((item) => {
     if (!item || item.type === 'separator') return item

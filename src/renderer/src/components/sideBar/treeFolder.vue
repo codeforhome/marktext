@@ -132,7 +132,13 @@ onMounted(() => {
     folderEl.value.addEventListener('contextmenu', (event) => {
       event.preventDefault()
       projectStore.CHANGE_ACTIVE_ITEM(props.folder)
-      showContextMenu(event, !!clipboard.value)
+      // Folders are never markdown — compare items will be suppressed.
+      showContextMenu(
+        event,
+        !!clipboard.value,
+        { isMarkdown: false, pathname: props.folder.pathname, name: props.folder.name },
+        null
+      )
     })
   }
   bus.on('SIDEBAR::show-new-input', handleInputFocus)
