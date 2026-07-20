@@ -17,8 +17,9 @@ import { popupContextMenu, type ContextMenuItem } from '../popupMenu'
 export const showContextMenu = (
   event: { clientX: number; clientY: number },
   hasPathCache: boolean,
-  fileInfo: { isMarkdown: boolean; pathname: string; name: string },
-  compareCandidate: string | null
+  // Absent for the root-folder menu, which offers no compare entries.
+  fileInfo?: { isMarkdown: boolean; pathname: string; name: string },
+  compareCandidate?: string | null
 ): void => {
   const contextItems: ContextMenuItem[] = [
     getNewFile(),
@@ -38,7 +39,7 @@ export const showContextMenu = (
   contextItems[5].enabled = hasPathCache
 
   // Compare items — only for markdown files
-  if (fileInfo.isMarkdown) {
+  if (fileInfo?.isMarkdown) {
     contextItems.push(SEPARATOR)
     contextItems.push(getSelectForCompare(fileInfo.pathname))
     if (compareCandidate && compareCandidate !== fileInfo.pathname) {

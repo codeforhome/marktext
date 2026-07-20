@@ -80,6 +80,7 @@ export interface PreferencesState {
   isHtmlEnabled: boolean
   isGitlabCompatibilityEnabled: boolean
   sequenceTheme: SequenceTheme | string
+  plantumlServer: string
 
   // ----- Theme -----
   theme: string
@@ -161,9 +162,9 @@ export const usePreferencesStore = defineStore('preferences', {
     lineHeight: 1.6,
     codeFontSize: 14,
     codeFontFamily: 'DejaVu Sans Mono',
-    codeBlockLineNumbers: true,
+    codeBlockLineNumbers: false,
     trimUnnecessaryCodeBlockEmptyLines: true,
-    wrapCodeBlocks: true,
+    wrapCodeBlocks: false,
     editorLineWidth: '',
 
     autoPairBracket: true,
@@ -196,6 +197,7 @@ export const usePreferencesStore = defineStore('preferences', {
     isHtmlEnabled: true,
     isGitlabCompatibilityEnabled: false,
     sequenceTheme: 'hand',
+    plantumlServer: 'https://www.plantuml.com/plantuml',
 
     theme: 'light',
     followSystemTheme: true,
@@ -226,7 +228,7 @@ export const usePreferencesStore = defineStore('preferences', {
 
     // Edit modes of the current window (not part of persistent settings)
     typewriter: false, // typewriter mode
-    focus: false, // focus mode
+    focus: false,
     sourceCode: false, // source code mode
 
     // user configration
